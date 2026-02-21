@@ -277,7 +277,7 @@ def map_analysis() -> Any:
     database = db.Node_collection()
     standards = request.args.getlist("standard")
     gap_analysis_dict = gap_analysis.schedule(standards, database)
-    if gap_analysis_dict.get("result"):
+    if "result" in gap_analysis_dict:
         return jsonify(gap_analysis_dict)
     if gap_analysis_dict.get("error"):
         abort(404)
@@ -297,7 +297,7 @@ def map_analysis_weak_links() -> Any:
     gap_analysis_results = database.get_gap_analysis_result(cache_key=cache_key)
     if gap_analysis_results:
         gap_analysis_dict = json.loads(gap_analysis_results)
-        if gap_analysis_dict.get("result"):
+        if "result" in gap_analysis_dict:
             return jsonify({"result": gap_analysis_dict.get("result")})
 
     # if conn.exists(cache_key):
@@ -352,7 +352,7 @@ def fetch_job() -> Any:
                 if ga:
                     # logger.__delattr__("and results in cache")
                     ga = flask_json.loads(ga)
-                    if ga.get("result"):
+                    if "result" in ga:
                         return jsonify(ga)
                     else:
                         logger.error(
@@ -376,6 +376,21 @@ def standards() -> Any:
     database = db.Node_collection()
     standards = database.standards()
     return standards
+
+
+@app.route("/rest/v1/openapi.yaml", methods=["GET"])
+def openapi_spec() -> Any:
+    """
+    Serve the OpenAPI specification for the OpenCRE REST API.
+    """
+    return send_from_directory(
+        directory=os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "../../docs/api",
+        ),
+        path="openapi.yaml",
+        mimetype="application/yaml",
+    )
 
 
 @app.route("/rest/v1/text_search", methods=["GET"])
